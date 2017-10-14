@@ -12,6 +12,10 @@ app.get('/', function (req, res) {
 	res.send('Hello')
 })
 
+app.post('/webhook', (req, res) => {
+    res.sendStatus(200)
+})
+
 app.listen(app.get('port'), function () {
   console.log('run at port', app.get('port'))
 })
