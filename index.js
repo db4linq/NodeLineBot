@@ -22,14 +22,14 @@ app.post('/webhook', (req, res) => {
     console.log(typeof sender, typeof text)
     console.log(req.body.events[0])
     if (text === 'สวัสดี' || text === 'Hello' || text === 'hello') {
-      sendText(replyToken, text)
+      sendText(sender, text)
     }
     res.sendStatus(200)
 })
 
 function sendText (sender, text) {
     let data = {
-      replyToken: sender,
+      to: sender,
       messages: [
         {
           type: 'text',
