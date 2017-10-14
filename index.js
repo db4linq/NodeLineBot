@@ -8,7 +8,7 @@ app.set('port', (process.env.PORT || 4000))
 app.use(bodyParser.urlencoded({extended: false}))
 app.use(bodyParser.json())
 
-var Token = 'ZHLMOCrQQ5M2BEhqiMDm4GxgEfy6KHsSKsRvsM/J5e930EtHsVRP7ofmrraP/+SyIYlTNFJB/qkdx49RuztNbdr3JyLb4Q7duN48ulGeUrVqieJAC+UYeq4IDvqeD4sukILDZrYIL03z5q80uYdSMAdB04t89/1O/w1cDnyilFU=';
+var Token = 'API';
 
 app.get('/', function (req, res) {
 	res.send('Hello')
