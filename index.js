@@ -33,17 +33,17 @@ app.post('/webhook', (req, res) => {
       sendLedOff()
       sendResponse(sender, 'คำสั่งทำงานเรียบร้อย')
     }else{
-      sendText(sender, 'เราไม่รู้จักรูปแบบคำสั่ง')
+      sendResponse(sender, 'เราไม่รู้จักรูปแบบคำสั่ง')
     }
     res.sendStatus(200)
 })
 
 function sendLedOn(){
-  client.publish('/line/bot/gpio', {pin: 23, status: true})
+  client.publish('/line/bot/gpio', JSON.stringify({pin: 23, status: true}))
 }
 
 function sendLedOff(){
-  client.publish('/line/bot/gpio', {pin: 23, status: false})
+  client.publish('/line/bot/gpio', JSON.stringify({pin: 23, status: false}))
 }
 
 
