@@ -26,9 +26,52 @@ app.post('/webhook', (req, res) => {
     console.log(req.body.events[0])
     if (text === 'สวัสดี' || text === 'Hello' || text === 'hello') {
       sendText(sender, text)
+    } else if (text === 'LED ON' || text === 'led on'){
+      sendLedOn()
+      sendResponse(sender, 'คำสั่งทำงานเรียบร้อย')
+    }else if (text === 'LED OFF' || text === 'led off'){
+      sendLedOff()
+      sendResponse(sender, 'คำสั่งทำงานเรียบร้อย')
+    }else{
+      sendText(sender, 'เราไม่รู้จักรูปแบบคำสั่ง')
     }
     res.sendStatus(200)
 })
+
+function sendLedOn(){
+  client.publish('/line/bot/gpio', {pin: 23, status: true})
+}
+
+function sendLedOff(){
+  client.publish('/line/bot/gpio', {pin: 23, status: false})
+}
+
+
+function sendResponse (sender, text) {
+  let data = {
+    to: sender,
+    messages: [
+      {
+        type: 'text',
+        text: text
+      } 
+    ]
+  }
+  request({
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + Token
+    },
+    url: 'https://api.line.me/v2/bot/message/push',
+    method: 'POST',
+    body: data,
+    json: true
+  }, function (err, res, body) {
+    if (err) console.log('error')
+    if (res) console.log('success')
+    if (body) console.log(body)
+  })
+}
 
 function sendText (sender, text) {
     let data = {
@@ -58,12 +101,12 @@ function sendText (sender, text) {
       if (res) console.log('success')
       if (body) console.log(body)
     })
-  }
+}
 
-  client.on('connect', function () {
-    client.subscribe('presence')
-    client.publish('presence', 'Hello mqtt')
-  })
+client.on('connect', function () {
+  client.subscribe('presence')
+  client.publish('presence', 'Hello mqtt')
+})
 
 app.listen(app.get('port'), function () {
   console.log('run at port', app.get('port'))
