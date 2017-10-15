@@ -8,6 +8,9 @@ app.set('port', (process.env.PORT || 4000))
 app.use(bodyParser.urlencoded({extended: false}))
 app.use(bodyParser.json())
 
+var mqtt = require('mqtt')
+var client  = mqtt.connect('mqtt://103.13.228.61')
+
 var Token = 'API';
 
 app.get('/', function (req, res) {
@@ -33,7 +36,11 @@ function sendText (sender, text) {
       messages: [
         {
           type: 'text',
-          text: 'สวัสดีค่ะ เราเป็นผู้ช่วยปรึกษาด้านความรัก'
+          text: 'สวัสดีค่ะ เราเป็นผู้ช่วยปรึกษาด้าน IoT'
+        },
+        {
+          type: 'text',
+          text: 'มีอะไรให้เรารับใช้'
         }
       ]
     }
