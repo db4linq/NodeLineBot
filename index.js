@@ -60,6 +60,11 @@ function sendText (sender, text) {
     })
   }
 
+  client.on('connect', function () {
+    client.subscribe('presence')
+    client.publish('presence', 'Hello mqtt')
+  })
+
 app.listen(app.get('port'), function () {
   console.log('run at port', app.get('port'))
 })
