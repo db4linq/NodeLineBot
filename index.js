@@ -64,14 +64,15 @@ app.post('/webhook', (req, res) => {
 function ledStatus(pin_number, sender){
   client.publish('/line/bot/goio/status/get', JSON.stringify({pin: pin_number}))
   var timeOut = setTimeout(function() {
-    ee.off('/line/bot/goio/status');
+    ee.remove('/line/bot/goio/status');
     sendResponse(sender, 'ไมาสามารถตรวจสอบสถานะได้ในตอนนี้')
   }, 2000);
   ee.on("/line/bot/goio/status", function (msg) {
     console.log(msg);
     clearTimeout(timeOut);
     let obj = JSON.parse(msg);
-    let msg_response = 'สถานะของ LED ' + obj.pin + obj.status == 1 ? 'เปิด' : 'ปิด';
+    let status = obj.status == 1 ? 'เปิด' : 'ปิด';
+    let msg_response = 'สถานะของ LED ' + obj.pin + status;
     sendResponse(sender, msg_response)
   });
 }
