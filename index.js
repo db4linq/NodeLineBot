@@ -17,8 +17,8 @@ var reg_led1_off = regexp().start('led').maybe(' ').must(1).must(' ').end('off')
 var reg_led2_on = regexp().start('led').maybe(' ').must(2).must(' ').end('on').ignoreCase().toRegExp()
 var reg_led2_off = regexp().start('led').maybe(' ').must(2).must(' ').end('off').ignoreCase().toRegExp()
 
-var reg_led1_status = regexp().start('led').maybe(' ').must(1).must(' ').end('status').ignoreCase().toRegExp()
-var reg_led2_status = regexp().start('led').maybe(' ').must(2).must(' ').end('status').ignoreCase().toRegExp()
+var reg_led1_status = regexp().start('led').maybe(' ').must(1).must(' ').maybe('status').maybe('สถานะ').ignoreCase().toRegExp()
+var reg_led2_status = regexp().start('led').maybe(' ').must(2).must(' ').maybe('status').maybe('สถานะ').ignoreCase().toRegExp()
 var reg_status = regexp().either('status', 'สถานะ').ignoreCase().toRegExp()
 
 var mqtt = require('mqtt')
