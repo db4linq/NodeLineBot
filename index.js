@@ -19,6 +19,7 @@ var reg_led2_off = regexp().start('led').must(' ').maybe(2).must(' ').end('off')
 
 var reg_led1_status = regexp().start('led').must(' ').maybe(1).must(' ').end('status').ignoreCase().toRegExp()
 var reg_led2_status = regexp().start('led').must(' ').maybe(2).must(' ').end('status').ignoreCase().toRegExp()
+var reg_status = regexp().either('status', 'สถานะ').ignoreCase().toRegExp()
 
 var mqtt = require('mqtt')
 var client  = mqtt.connect('mqtt://iot.eclipse.org')
@@ -54,6 +55,8 @@ app.post('/webhook', (req, res) => {
       ledStatus(21, sender);
     }else if (reg_led2_status.test(text)){
       ledStatus(22, sender);
+    }else if (reg_status.test(text)){
+      
     }
     else{
       sendResponse(sender, 'เราไม่รู้จักรูปแบบคำสั่ง')
