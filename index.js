@@ -41,16 +41,16 @@ app.post('/webhook', (req, res) => {
       sendText(sender, text);
     } else if (reg_led1_on.test(text)){
       sendLed1On();
-      sendResponse(sender, 'คำสั่งทำงานเรียบร้อย');
+      sendResponse(sender, ['คำสั่งทำงานเรียบร้อย']);
     }else if (reg_led1_off.test(text)){
       sendLed1Off();
-      sendResponse(sender, 'คำสั่งทำงานเรียบร้อย');
+      sendResponse(sender, ['คำสั่งทำงานเรียบร้อย']);
     }else if (reg_led2_on.test(text)){
       sendLed2On()
-      sendResponse(sender, 'คำสั่งทำงานเรียบร้อย')
+      sendResponse(sender, ['คำสั่งทำงานเรียบร้อย'])
     }else if (reg_led2_off.test(text)){
       sendLed2Off();
-      sendResponse(sender, 'คำสั่งทำงานเรียบร้อย');
+      sendResponse(sender, ['คำสั่งทำงานเรียบร้อย']);
     }else if (reg_led1_status.test(text)){
       ledStatus(21, sender);
     }else if (reg_led2_status.test(text)){
@@ -59,7 +59,7 @@ app.post('/webhook', (req, res) => {
       ledStatusAll(sender);
     }
     else{
-      sendResponse(sender, 'เราไม่รู้จักรูปแบบคำสั่ง')
+      sendResponse(sender, ['เราไม่รู้จักรูปแบบคำสั่ง'])
     }
     res.sendStatus(200)
 })
@@ -70,20 +70,18 @@ function ledStatusAll(sender){
     console.log(msg);
     clearTimeout(timeOut);
     let objs = JSON.parse(msg);
-    let msg_response = '';
+    let _tests = [];
     for(var i=0; j=objs.length,i<j; i++){
       let obj = objs[i];
       let status = obj.status == 1 ? ' เปิด' : ' ปิด';
-      msg_response = msg_response + 'สถานะของ LED ' + obj.pin + status;
-      if (i<objs.length){
-        msg_response = msg_response + ', '
-      }
+      let msg_response = 'สถานะของ LED ' + obj.pin + status;
+      _tests.push(msg_response); 
     }
-    sendResponse(sender, msg_response)
+    sendResponse(sender, _tests)
   }
   var timeOut = setTimeout(function() {
     ee.removeListener('/line/bot/goio/status/all', _onListener);
-    sendResponse(sender, 'ไมาสามารถตรวจสอบสถานะได้ในตอนนี้')
+    sendResponse(sender, ['ไมาสามารถตรวจสอบสถานะได้ในตอนนี้'])
   }, 5000);
   ee.once("/line/bot/goio/status/all", _onListener);
 }
@@ -96,11 +94,11 @@ function ledStatus(pin_number, sender){
     let obj = JSON.parse(msg);
     let status = obj.status == 1 ? ' เปิด' : ' ปิด';
     let msg_response = 'สถานะของ LED ' + obj.pin + status;
-    sendResponse(sender, msg_response)
+    sendResponse(sender, [msg_response])
   }
   var timeOut = setTimeout(function() {
     ee.removeListener('/line/bot/goio/status', _onListener);
-    sendResponse(sender, 'ไมาสามารถตรวจสอบสถานะได้ในตอนนี้')
+    sendResponse(sender, ['ไมาสามารถตรวจสอบสถานะได้ในตอนนี้'])
   }, 5000);
   ee.once("/line/bot/goio/status", _onListener);
 }
@@ -124,14 +122,16 @@ function sendLed2Off(){
 
 
 function sendResponse (sender, text) {
+  let _msg = [];
+  for(var i=0; j=text.length,i<j; i++) {
+    _msg.push({
+      type: 'text',
+      text: text[i]
+    })
+  }
   let data = {
     to: sender,
-    messages: [
-      {
-        type: 'text',
-        text: text
-      } 
-    ]
+    messages: _msg
   }
   request({
     headers: {
