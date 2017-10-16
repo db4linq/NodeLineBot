@@ -65,7 +65,7 @@ app.post('/webhook', (req, res) => {
 })
 
 function ledStatusAll(sender){
-  client.publish('/line/bot/goio/status/get/all', JSON.stringify({pin: pin_number}))
+  client.publish('/line/bot/goio/status/get/all', JSON.stringify({}))
   function _onListener(msg){
     console.log(msg);
     clearTimeout(timeOut);
