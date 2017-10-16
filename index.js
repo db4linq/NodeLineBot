@@ -74,7 +74,7 @@ function ledStatus(pin_number, sender){
   var timeOut = setTimeout(function() {
     ee.removeListener('/line/bot/goio/status', _onListener);
     sendResponse(sender, 'ไมาสามารถตรวจสอบสถานะได้ในตอนนี้')
-  }, 2000);
+  }, 5000);
   ee.on("/line/bot/goio/status", _onListener);
 }
 
