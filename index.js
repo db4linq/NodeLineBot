@@ -2,6 +2,8 @@ var express = require('express')
 var bodyParser = require('body-parser')
 var request = require('request')
 var regexp = require('node-regexp')
+var EventEmitter = require("events").EventEmitter;
+var ee = new EventEmitter();
 var app = express()
 
 app.use(bodyParser.json())
@@ -14,6 +16,9 @@ var reg_led1_on = regexp().start('led').must(' ').maybe(1).must(' ').end('on').i
 var reg_led1_off = regexp().start('led').must(' ').maybe(1).must(' ').end('off').ignoreCase().toRegExp()
 var reg_led2_on = regexp().start('led').must(' ').maybe(2).must(' ').end('on').ignoreCase().toRegExp()
 var reg_led2_off = regexp().start('led').must(' ').maybe(2).must(' ').end('off').ignoreCase().toRegExp()
+
+var reg_led1_status = regexp().start('led').must(' ').maybe(1).must(' ').end('status').ignoreCase().toRegExp()
+var reg_led2_status = regexp().start('led').must(' ').maybe(2).must(' ').end('status').ignoreCase().toRegExp()
 
 var mqtt = require('mqtt')
 var client  = mqtt.connect('mqtt://iot.eclipse.org')
@@ -32,25 +37,45 @@ app.post('/webhook', (req, res) => {
     console.log(typeof sender, typeof text)
     console.log(req.body.events[0])
     if (welcom.test(text)) {
-      sendText(sender, text)
+      sendText(sender, text);
     } else if (reg_led1_on.test(text)){
-      sendLed1On()
-      sendResponse(sender, 'คำสั่งทำงานเรียบร้อย')
+      sendLed1On();
+      sendResponse(sender, 'คำสั่งทำงานเรียบร้อย');
     }else if (reg_led1_off.test(text)){
-      sendLed1Off()
-      sendResponse(sender, 'คำสั่งทำงานเรียบร้อย')
+      sendLed1Off();
+      sendResponse(sender, 'คำสั่งทำงานเรียบร้อย');
     }else if (reg_led2_on.test(text)){
       sendLed2On()
       sendResponse(sender, 'คำสั่งทำงานเรียบร้อย')
     }else if (reg_led2_off.test(text)){
-      sendLed2Off()
-      sendResponse(sender, 'คำสั่งทำงานเรียบร้อย')
+      sendLed2Off();
+      sendResponse(sender, 'คำสั่งทำงานเรียบร้อย');
+    }else if (reg_led1_status.test(text)){
+      ledStatus(21, sender);
+    }else if (reg_led2_status.test(text)){
+      ledStatus(22, sender);
     }
     else{
       sendResponse(sender, 'เราไม่รู้จักรูปแบบคำสั่ง')
     }
     res.sendStatus(200)
 })
+
+function ledStatus(pin_number, sender){
+  client.publish('/line/bot/goio/status/get', JSON.stringify({pin: pin_number}))
+  var timeOut = setTimeout(function() {
+    ee.off('/line/bot/goio/status');
+    sendResponse(sender, 'ไมาสามารถตรวจสอบสถานะได้ในตอนนี้')
+  }, 2000);
+  ee.on("/line/bot/goio/status", function (msg) {
+    console.log(msg);
+    clearTimeout(timeOut);
+    let obj = JSON.parse(msg);
+    let msg_response = 'สถานะของ LED ' + obj.pin + obj.status == 1 ? 'เปิด' : 'ปิด';
+    sendResponse(sender, msg_response)
+  });
+}
+
 
 function sendLed1On(){
   client.publish('/line/bot/gpio', JSON.stringify({pin: 21, status: true}))
@@ -125,9 +150,17 @@ function sendText (sender, text) {
     })
 }
 
+client.on('message', function (topic, message) {
+  // message is Buffer
+  console.log(topic.toString(), message.toString())
+  if (topic.toString() === '/line/bot/goio/status') {
+    ee.emit('/line/bot/goio/status', message.toString());
+  }
+
+})
+
 client.on('connect', function () {
-  client.subscribe('presence')
-  client.publish('presence', 'Hello mqtt')
+  client.subscribe('/line/bot/goio/status')
 })
 
 app.listen(app.get('port'), function () {
