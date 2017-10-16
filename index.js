@@ -73,7 +73,7 @@ function ledStatusAll(sender){
     let msg_response = '';
     for(var i=0; j=objs.length,i<j; i++){
       let obj = objs[i];
-      let status = obj.status == 1 ? 'เปิด' : 'ปิด';
+      let status = obj.status == 1 ? ' เปิด' : ' ปิด';
       msg_response = msg_response + 'สถานะของ LED ' + obj.pin + status;
       if (i<objs.length){
         msg_response = msg_response + ', '
@@ -94,7 +94,7 @@ function ledStatus(pin_number, sender){
     console.log(msg);
     clearTimeout(timeOut);
     let obj = JSON.parse(msg);
-    let status = obj.status == 1 ? 'เปิด' : 'ปิด';
+    let status = obj.status == 1 ? ' เปิด' : ' ปิด';
     let msg_response = 'สถานะของ LED ' + obj.pin + status;
     sendResponse(sender, msg_response)
   }
