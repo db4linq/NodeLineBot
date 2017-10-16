@@ -13,9 +13,9 @@ app.use(bodyParser.json())
 
 var welcom = regexp().either('สวัสดี', 'hello').ignoreCase().toRegExp()
 var reg_led1_on = regexp().start('led').maybe(' ').must(1).must(' ').either('on', 'เปิด').ignoreCase().toRegExp()
-var reg_led1_off = regexp().start('led').maybe(' ').must(1).must(' ').either('ooff', 'ปิด').ignoreCase().toRegExp()
+var reg_led1_off = regexp().start('led').maybe(' ').must(1).must(' ').either('off', 'ปิด').ignoreCase().toRegExp()
 var reg_led2_on = regexp().start('led').maybe(' ').must(2).must(' ').either('on', 'เปิด').ignoreCase().toRegExp()
-var reg_led2_off = regexp().start('led').maybe(' ').must(2).must(' ').either('ooff', 'ปิด').ignoreCase().toRegExp()
+var reg_led2_off = regexp().start('led').maybe(' ').must(2).must(' ').either('off', 'ปิด').ignoreCase().toRegExp()
 
 var reg_led1_status = regexp().start('led').maybe(' ').must(1).must(' ').maybe('status').maybe('สถานะ').ignoreCase().toRegExp()
 var reg_led2_status = regexp().start('led').maybe(' ').must(2).must(' ').maybe('status').maybe('สถานะ').ignoreCase().toRegExp()
