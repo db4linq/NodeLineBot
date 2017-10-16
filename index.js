@@ -75,7 +75,7 @@ function ledStatus(pin_number, sender){
     ee.removeListener('/line/bot/goio/status', _onListener);
     sendResponse(sender, 'ไมาสามารถตรวจสอบสถานะได้ในตอนนี้')
   }, 5000);
-  ee.on("/line/bot/goio/status", _onListener);
+  ee.once("/line/bot/goio/status", _onListener);
 }
 
 
