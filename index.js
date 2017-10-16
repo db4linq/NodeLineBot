@@ -56,13 +56,37 @@ app.post('/webhook', (req, res) => {
     }else if (reg_led2_status.test(text)){
       ledStatus(22, sender);
     }else if (reg_status.test(text)){
-      
+
     }
     else{
       sendResponse(sender, 'เราไม่รู้จักรูปแบบคำสั่ง')
     }
     res.sendStatus(200)
 })
+
+function ledStatusAll(sender){
+  client.publish('/line/bot/goio/status/get/all', JSON.stringify({pin: pin_number}))
+  function _onListener(msg){
+    console.log(msg);
+    clearTimeout(timeOut);
+    let objs = JSON.parse(msg);
+    let msg_response = '';
+    for(var i=0; j=objs.length,i<j; i++){
+      let obj = objs[i];
+      let status = obj.status == 1 ? 'เปิด' : 'ปิด';
+      msg_response = msg_response + 'สถานะของ LED ' + obj.pin + status;
+      if (i<objs.length){
+        msg_response = msg_response + ', '
+      }
+    }
+    sendResponse(sender, msg_response)
+  }
+  var timeOut = setTimeout(function() {
+    ee.removeListener('/line/bot/goio/status/all', _onListener);
+    sendResponse(sender, 'ไมาสามารถตรวจสอบสถานะได้ในตอนนี้')
+  }, 5000);
+  ee.once("/line/bot/goio/status/all", _onListener);
+}
 
 function ledStatus(pin_number, sender){
   client.publish('/line/bot/goio/status/get', JSON.stringify({pin: pin_number}))
@@ -162,10 +186,15 @@ client.on('message', function (topic, message) {
     ee.emit('/line/bot/goio/status', message.toString());
   }
 
+  if (topic.toString() === '/line/bot/goio/status/all') {
+    ee.emit('/line/bot/goio/status/all', message.toString());
+  }
+
 })
 
 client.on('connect', function () {
   client.subscribe('/line/bot/goio/status')
+  client.subscribe('/line/bot/goio/status/all')
 })
 
 app.listen(app.get('port'), function () {
