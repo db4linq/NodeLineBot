@@ -1,12 +1,19 @@
 var express = require('express')
 var bodyParser = require('body-parser')
 var request = require('request')
+var regexp = require('node-regexp')
 var app = express()
 
 app.use(bodyParser.json())
 app.set('port', (process.env.PORT || 4000))
 app.use(bodyParser.urlencoded({extended: false}))
 app.use(bodyParser.json())
+
+var welcom = regexp().either('สวัสดี', 'hello').ignoreCase().toRegExp()
+var reg_led1_on = regexp().start('led').must(' ').maybe(1).must(' ').end('on').ignoreCase().toRegExp()
+var reg_led1_off = regexp().start('led').must(' ').maybe(1).must(' ').end('off').ignoreCase().toRegExp()
+var reg_led2_on = regexp().start('led').must(' ').maybe(2).must(' ').end('on').ignoreCase().toRegExp()
+var reg_led2_off = regexp().start('led').must(' ').maybe(2).must(' ').end('off').ignoreCase().toRegExp()
 
 var mqtt = require('mqtt')
 var client  = mqtt.connect('mqtt://iot.eclipse.org')
@@ -24,26 +31,41 @@ app.post('/webhook', (req, res) => {
     console.log(text, sender, replyToken)
     console.log(typeof sender, typeof text)
     console.log(req.body.events[0])
-    if (text === 'สวัสดี' || text === 'Hello' || text === 'hello') {
+    if (welcom.test(text)) {
       sendText(sender, text)
-    } else if (text === 'LED ON' || text === 'led on'){
-      sendLedOn()
+    } else if (reg_led1_on.test(text)){
+      sendLed1On()
       sendResponse(sender, 'คำสั่งทำงานเรียบร้อย')
-    }else if (text === 'LED OFF' || text === 'led off'){
-      sendLedOff()
+    }else if (reg_led1_off.test(text)){
+      sendLed1Off()
       sendResponse(sender, 'คำสั่งทำงานเรียบร้อย')
-    }else{
+    }else if (reg_led2_on.test(text)){
+      sendLed2On()
+      sendResponse(sender, 'คำสั่งทำงานเรียบร้อย')
+    }else if (reg_led2_off.test(text)){
+      sendLed2Off()
+      sendResponse(sender, 'คำสั่งทำงานเรียบร้อย')
+    }
+    else{
       sendResponse(sender, 'เราไม่รู้จักรูปแบบคำสั่ง')
     }
     res.sendStatus(200)
 })
 
-function sendLedOn(){
-  client.publish('/line/bot/gpio', JSON.stringify({pin: 23, status: true}))
+function sendLed1On(){
+  client.publish('/line/bot/gpio', JSON.stringify({pin: 21, status: true}))
 }
 
-function sendLedOff(){
-  client.publish('/line/bot/gpio', JSON.stringify({pin: 23, status: false}))
+function sendLed1Off(){
+  client.publish('/line/bot/gpio', JSON.stringify({pin: 21, status: false}))
+}
+
+function sendLed2On(){
+  client.publish('/line/bot/gpio', JSON.stringify({pin: 22, status: true}))
+}
+
+function sendLed2Off(){
+  client.publish('/line/bot/gpio', JSON.stringify({pin: 22, status: false}))
 }
 
 
