@@ -56,7 +56,7 @@ app.post('/webhook', (req, res) => {
     }else if (reg_led2_status.test(text)){
       ledStatus(22, sender);
     }else if (reg_status.test(text)){
-
+      ledStatusAll(sender);
     }
     else{
       sendResponse(sender, 'เราไม่รู้จักรูปแบบคำสั่ง')
