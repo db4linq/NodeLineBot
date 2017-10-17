@@ -231,6 +231,7 @@ client.on('message', function (topic, message) {
 client.on('connect', function () {
   client.subscribe('/line/bot/goio/status')
   client.subscribe('/line/bot/goio/status/all')
+  client.subscribe('/line/bot/temperature')
 })
 
 app.listen(app.get('port'), function () {
