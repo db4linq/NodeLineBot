@@ -80,8 +80,8 @@ function tempStatus(sender){
       if (obj.temperature > 25){
         _text.push('ร้อนจัง ')
       }
-      _text.push('อุณหภูมิ ' + obj.temperature + ' °c')
-      _text.push('ความชื้น ' + obj.humidity + ' %')
+      _texts.push('อุณหภูมิ ' + obj.temperature + ' °c')
+      _texts.push('ความชื้น ' + obj.humidity + ' %')
     }else{
       _texts.push('ไม่สามารถอ่านข้อมูลจากเว็นเซ่อร์ได้')
       _texts.push('โปรดลองอีกครั้ง')
