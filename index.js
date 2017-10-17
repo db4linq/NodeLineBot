@@ -37,6 +37,7 @@ app.post('/webhook', (req, res) => {
     console.log(text, sender, replyToken)
     console.log(typeof sender, typeof text)
     console.log(req.body.events[0])
+    
     if (welcom.test(text)) {
       sendText(sender, text);
     } else if (reg_led1_on.test(text)){
