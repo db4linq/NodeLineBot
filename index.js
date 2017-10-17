@@ -11,6 +11,8 @@ app.set('port', (process.env.PORT || 4000))
 app.use(bodyParser.urlencoded({extended: false}))
 app.use(bodyParser.json())
 
+var LINE_PUSH = 'https://api.line.me/v2/bot/message/push';
+
 var welcom = regexp().either('สวัสดี', 'hello').ignoreCase().toRegExp()
 var reg_led1_on = regexp().start('led').maybe(' ').must(1).must(' ').either('on', 'เปิด').ignoreCase().toRegExp()
 var reg_led1_off = regexp().start('led').maybe(' ').must(1).must(' ').either('off', 'ปิด').ignoreCase().toRegExp()
@@ -81,7 +83,7 @@ function tempStatus(sender){
         _text.push('ร้อนจัง ')
       }
       _texts.push('อุณหภูมิ ' + obj.temperature + ' °c')
-      _texts.push('ความชื้น ' + obj.humidity + ' %')
+      _texts.push('ความชื้น ' + obj.humidity + ' %') 
     }else{
       _texts.push('ไม่สามารถอ่านข้อมูลจากเว็นเซ่อร์ได้')
       _texts.push('โปรดลองอีกครั้ง')
@@ -152,6 +154,23 @@ function sendLed2Off(){
   client.publish('/line/bot/gpio', JSON.stringify({pin: 22, status: false}))
 }
 
+function send_request(method, data, url){
+  request({
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + Token
+    },
+    url: url,
+    method: method,
+    body: data,
+    json: true
+  }, function (err, res, body) {
+    if (err) console.log('error')
+    if (res) console.log('success')
+    if (body) console.log(body)
+  })  
+}
+
 
 function pushResponse (sender, text) {
   let _msg = [];
@@ -165,20 +184,7 @@ function pushResponse (sender, text) {
     to: sender,
     messages: _msg
   }
-  request({
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + Token
-    },
-    url: 'https://api.line.me/v2/bot/message/push',
-    method: 'POST',
-    body: data,
-    json: true
-  }, function (err, res, body) {
-    if (err) console.log('error')
-    if (res) console.log('success')
-    if (body) console.log(body)
-  })
+  send_request('POST', data, LINE_PUSH);
 }
 
 function sendText (sender, text) {
@@ -195,20 +201,7 @@ function sendText (sender, text) {
         }
       ]
     }
-    request({
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + Token
-      },
-      url: 'https://api.line.me/v2/bot/message/push',
-      method: 'POST',
-      body: data,
-      json: true
-    }, function (err, res, body) {
-      if (err) console.log('error')
-      if (res) console.log('success')
-      if (body) console.log(body)
-    })
+    send_request('POST', data, LINE_PUSH);
 }
 
 client.on('message', function (topic, message) {
