@@ -92,7 +92,7 @@ function tempStatus(sender){
     pushResponse(sender, _texts) 
   }
   var timeOut = setTimeout(function() {
-    ee.removeListener('/line/bot/temperature/get', _onListener);
+    ee.removeListener('/line/bot/temperature', _onListener);
     pushResponse(sender, ['ไมาสามารถตรวจสอบสถานะได้ในตอนนี้'])
   }, 5000);
   ee.once("/line/bot/temperature", _onListener);
