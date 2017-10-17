@@ -17,6 +17,8 @@ var reg_led1_off = regexp().start('led').maybe(' ').must(1).must(' ').either('of
 var reg_led2_on = regexp().start('led').maybe(' ').must(2).must(' ').either('on', 'เปิด').ignoreCase().toRegExp()
 var reg_led2_off = regexp().start('led').maybe(' ').must(2).must(' ').either('off', 'ปิด').ignoreCase().toRegExp()
 
+var reg_temperature = regexp().maybe(' ').either('อุณหภูมิ', 'temperature', 'humidity', 'temp', 'ร้อน', 'hot').ignoreCase().toRegExp()
+
 var reg_led1_status = regexp().start('led').maybe(' ').must(1).must(' ').maybe('status').maybe('สถานะ').ignoreCase().toRegExp()
 var reg_led2_status = regexp().start('led').maybe(' ').must(2).must(' ').maybe('status').maybe('สถานะ').ignoreCase().toRegExp()
 var reg_status = regexp().either('status', 'สถานะ').ignoreCase().toRegExp()
@@ -42,28 +44,57 @@ app.post('/webhook', (req, res) => {
       sendText(sender, text);
     } else if (reg_led1_on.test(text)){
       sendLed1On();
-      sendResponse(sender, ['คำสั่งทำงานเรียบร้อย']);
+      pushResponse(sender, ['คำสั่งทำงานเรียบร้อย']);
     }else if (reg_led1_off.test(text)){
       sendLed1Off();
-      sendResponse(sender, ['คำสั่งทำงานเรียบร้อย']);
+      pushResponse(sender, ['คำสั่งทำงานเรียบร้อย']);
     }else if (reg_led2_on.test(text)){
       sendLed2On()
-      sendResponse(sender, ['คำสั่งทำงานเรียบร้อย'])
+      pushResponse(sender, ['คำสั่งทำงานเรียบร้อย'])
     }else if (reg_led2_off.test(text)){
       sendLed2Off();
-      sendResponse(sender, ['คำสั่งทำงานเรียบร้อย']);
+      pushResponse(sender, ['คำสั่งทำงานเรียบร้อย']);
     }else if (reg_led1_status.test(text)){
       ledStatus(21, sender);
     }else if (reg_led2_status.test(text)){
       ledStatus(22, sender);
     }else if (reg_status.test(text)){
       ledStatusAll(sender);
+    }else if (reg_temperature.test(text)) {
+      tempStatus(sender)
     }
     else{
-      sendResponse(sender, ['เราไม่รู้จักรูปแบบคำสั่ง'])
+      pushResponse(sender, ['เราไม่รู้จักรูปแบบคำสั่ง'])
     }
     res.sendStatus(200)
 })
+
+function tempStatus(sender){
+  client.publish('/line/bot/temperature/get', JSON.stringify({}))
+  function _onListener(msg){
+    console.log(msg);
+    clearTimeout(timeOut); 
+    let obj = JSON.parse(msg);
+    let _texts = [];
+    if (obj.status === 1) {
+      if (obj.temperature > 25){
+        _text.push('ร้อนจัง ')
+      }
+      _text.push('อุณหภูมิ ' + obj.temperature + ' °c')
+      _text.push('ความชื้น ' + obj.humidity + ' %')
+    }else{
+      _texts.push('ไม่สามารถอ่านข้อมูลจากเว็นเซ่อร์ได้')
+      _texts.push('โปรดลองอีกครั้ง')
+    } 
+    
+    pushResponse(sender, _texts) 
+  }
+  var timeOut = setTimeout(function() {
+    ee.removeListener('/line/bot/temperature/get', _onListener);
+    pushResponse(sender, ['ไมาสามารถตรวจสอบสถานะได้ในตอนนี้'])
+  }, 5000);
+  ee.once("/line/bot/temperature", _onListener);
+}
 
 function ledStatusAll(sender){
   client.publish('/line/bot/goio/status/get/all', JSON.stringify({}))
@@ -78,11 +109,11 @@ function ledStatusAll(sender){
       let msg_response = 'สถานะของ LED ' + obj.pin + status;
       _tests.push(msg_response); 
     }
-    sendResponse(sender, _tests)
+    pushResponse(sender, _tests)
   }
   var timeOut = setTimeout(function() {
     ee.removeListener('/line/bot/goio/status/all', _onListener);
-    sendResponse(sender, ['ไมาสามารถตรวจสอบสถานะได้ในตอนนี้'])
+    pushResponse(sender, ['ไมาสามารถตรวจสอบสถานะได้ในตอนนี้'])
   }, 5000);
   ee.once("/line/bot/goio/status/all", _onListener);
 }
@@ -95,11 +126,11 @@ function ledStatus(pin_number, sender){
     let obj = JSON.parse(msg);
     let status = obj.status == 1 ? ' เปิด' : ' ปิด';
     let msg_response = 'สถานะของ LED ' + obj.pin + status;
-    sendResponse(sender, [msg_response])
+    pushResponse(sender, [msg_response])
   }
   var timeOut = setTimeout(function() {
     ee.removeListener('/line/bot/goio/status', _onListener);
-    sendResponse(sender, ['ไมาสามารถตรวจสอบสถานะได้ในตอนนี้'])
+    pushResponse(sender, ['ไมาสามารถตรวจสอบสถานะได้ในตอนนี้'])
   }, 5000);
   ee.once("/line/bot/goio/status", _onListener);
 }
@@ -122,7 +153,7 @@ function sendLed2Off(){
 }
 
 
-function sendResponse (sender, text) {
+function pushResponse (sender, text) {
   let _msg = [];
   for(var i=0; j=text.length,i<j; i++) {
     _msg.push({
@@ -189,6 +220,10 @@ client.on('message', function (topic, message) {
 
   if (topic.toString() === '/line/bot/goio/status/all') {
     ee.emit('/line/bot/goio/status/all', message.toString());
+  }
+
+  if (topic.toString() === '/line/bot/temperature') {
+    ee.emit('/line/bot/temperature', message.toString());
   }
 
 })
